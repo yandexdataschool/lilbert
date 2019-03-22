@@ -1,6 +1,8 @@
 import csv
 import os
 import sys
+import pandas as pd
+import csv
 
 
 class InputExample(object):
@@ -44,7 +46,7 @@ class DataProcessor(object):
     def get_dev_examples(self, data_dir):
         """Gets a collection of `InputExample`s for the dev set."""
         raise NotImplementedError()
-
+    
     def get_labels(self):
         """Gets the list of labels for this data set."""
         raise NotImplementedError()
@@ -74,7 +76,7 @@ class MrpcProcessor(DataProcessor):
         """See base class."""
         return self._create_examples(
             self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
-
+    
     def get_labels(self):
         """See base class."""
         return ["0", "1"]
@@ -107,7 +109,7 @@ class MnliProcessor(DataProcessor):
         return self._create_examples(
             self._read_tsv(os.path.join(data_dir, "dev_matched.tsv")),
             "dev_matched")
-
+    
     def get_labels(self):
         """See base class."""
         return ["contradiction", "entailment", "neutral"]
@@ -168,11 +170,6 @@ class SST2Processor(DataProcessor):
         """See base class."""
         return self._create_examples(
             self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
-    
-    def get_test_examples(self, data_dir):
-        """See base class."""
-        return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, "test.tsv")), "dev")
 
     def get_labels(self):
         """See base class."""
@@ -187,4 +184,44 @@ class SST2Processor(DataProcessor):
             label = line[1]
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
+        return examples
+
+    
+def get_quora_df(filename):
+    with open(filename, "r", encoding='utf-8') as f:
+        rows = list(csv.reader(f, delimiter='\t', quotechar=None))
+    df = pd.DataFrame(rows[1:], columns=rows[0])
+    df = df[['question1', 'question2', 'is_duplicate']]
+    df = df[pd.notnull(df['is_duplicate'])]
+    df.columns = ['text_a', 'text_b', 'label']
+    return df
+    
+    
+class QQPProcessor(DataProcessor):
+    """Processor for the SST2 data set (GLUE version)."""
+    
+    def get_train_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(
+            get_quora_df(os.path.join(data_dir, "train.tsv")), "train")
+
+    def get_dev_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(
+            get_quora_df(os.path.join(data_dir, "dev.tsv")), "dev")
+
+    def get_labels(self):
+        """See base class."""
+        return ["0", "1"]
+
+    def _create_examples(self, df, set_type):
+        """Creates examples for the training and dev sets."""
+        examples = []
+        for i, row in df.iterrows():
+            guid = "%s-%s" % (set_type, i)
+            text_a = row['text_a']
+            text_b = row['text_b']
+            label = row['label']
+            examples.append(
+                InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
         return examples
