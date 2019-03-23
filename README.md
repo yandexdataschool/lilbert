@@ -1,6 +1,6 @@
 # lilbert
 
-The main code of the project is in lilbert directory. The zoo folder is for collecting intermediate experiments and results that are currently too incomplete to be put to the main directory.
+The main code of the project is in lilbert directory. The zoo folder is for collecting intermediate experiments and results.
 
 For reproducibility reasons, we all shall use a virtual environment with the same setup: same version of python and all of the packages.
 The latest stable version of python is Python 3.7.2, so make sure you download this version from python.org: https://www.python.org/downloads/release/python-372/
