@@ -1,5 +1,9 @@
 # lilbert.zoo
 
-This folder is for collecting intermediate experiments and results that are currently too incomplete to be put to the main directory. Let's try to make the code for the experiments as clean and readable as possible so that other people can understand and reproduce them with minimal effort. Following PEP-8 guidelines and using python scripts (instead of creating large code blocks in jupyter) are greatly encouraged.
+Эта папка для наших промежуточных экспериментов и результатов, которые в настоящее время не достаточно готовы. Тем не менее, давайте будем стараться коммитить в zoo чистый и читаемый код, чтобы другие люди с минимальными усилиями могли понять реализацию экспериментов и воспроизвести у себя (или найти багу/неоптимальное решение, например).
 
-For each experiment, there should be a separate directory.
+Несколько предложений:
+
+- Желательно изначально придерживаться основных гайдлайнов PEP-8 (чтобы потом было проще переносить код в основной репозиторий).
+- Для каждого эксперимента отдельная папка.
+- Системное решение проблем: если у вас есть некоторая проблема, то нужно стараться сделать решение наиболее общим, а не костылять под себя, чтобы другие затем могли переиспользовать код, а наш основной репозиторий пополнялся полезным кодом и новой функциональностью.
