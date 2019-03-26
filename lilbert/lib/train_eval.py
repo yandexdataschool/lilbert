@@ -9,7 +9,6 @@ from pytorch_pretrained_bert.optimization import BertAdam
 from pytorch_pretrained_bert.modeling import BertConfig
 
 from lib import feature_processors, metrics
-from lib.bert import BertForSequenceClassification
 
 
 def train(model, tokenizer, params,
@@ -20,7 +19,7 @@ def train(model, tokenizer, params,
     random.seed(params['seed'])
     np.random.seed(params['seed'])
     torch.manual_seed(params['seed'])
-    
+
     train_steps_per_epoch = int(len(train_examples) / params['train_batch_size'])
     num_train_optimization_steps = train_steps_per_epoch * params['num_train_epochs']
 
@@ -38,32 +37,31 @@ def train(model, tokenizer, params,
                          lr=params['learning_rate'],
                          warmup=params['warmup_proportion'],
                          t_total=num_train_optimization_steps)
-    
+
     global_step = 0
     nb_tr_steps = 0
     tr_loss = 0
-    
+
     train_features = feature_processors.convert_examples_to_features(
         train_examples,
-        params['label_list'],
-        params['max_seq_length'],
-        tokenizer)
+        tokenizer,
+        params)
     print("***** Running training *****")
-    print("Num examples:",  len(train_examples))
+    print("Num examples:", len(train_examples))
     print("Batch size:  ", params['train_batch_size'])
     print("Num steps:   ", num_train_optimization_steps)
     all_input_ids = torch.tensor(
         [f.input_ids for f in train_features],
-         dtype=torch.long)
+        dtype=torch.long)
     all_input_mask = torch.tensor(
         [f.input_mask for f in train_features],
-         dtype=torch.long)
+        dtype=torch.long)
     all_segment_ids = torch.tensor(
         [f.segment_ids for f in train_features],
-         dtype=torch.long)
+        dtype=torch.long)
     all_label_ids = torch.tensor(
         [f.label_id for f in train_features],
-         dtype=torch.long)
+        dtype=torch.long)
     train_data = TensorDataset(all_input_ids,
                                all_input_mask,
                                all_segment_ids,
@@ -117,7 +115,7 @@ def train(model, tokenizer, params,
         'train_loss': tr_loss / nb_tr_steps,
         'train_global_step': global_step,
     }
-    
+
     return model, train_result
 
 
@@ -125,21 +123,20 @@ def predict(model, tokenizer, params, valid_examples):
     random.seed(params['seed'])
     np.random.seed(params['seed'])
     torch.manual_seed(params['seed'])
-    
+
     eval_features = feature_processors.convert_examples_to_features(
-            valid_examples,
-            params['label_list'],
-            params['max_seq_length'],
-            tokenizer)
+        valid_examples,
+        tokenizer,
+        params)
     all_input_ids = torch.tensor(
         [f.input_ids for f in eval_features],
-         dtype=torch.long)
+        dtype=torch.long)
     all_input_mask = torch.tensor(
         [f.input_mask for f in eval_features],
-         dtype=torch.long)
+        dtype=torch.long)
     all_segment_ids = torch.tensor(
         [f.segment_ids for f in eval_features],
-         dtype=torch.long)
+        dtype=torch.long)
     eval_data = TensorDataset(all_input_ids,
                               all_input_mask,
                               all_segment_ids)
@@ -167,9 +164,9 @@ def evaluate(model, tokenizer, params, valid_examples):
     print("***** Running evaluation *****")
     print("Num examples: ", len(valid_examples))
     print("Batch size:   ", params['eval_batch_size'])
-    
+
     prob_preds = predict(model, tokenizer, params, valid_examples)
-    true_labels = np.array([int(example.label) 
+    true_labels = np.array([int(example.label)
                             for i, example in enumerate(valid_examples)])
     result = {
         'eval_loss': metrics.log_loss(true_labels, prob_preds),
