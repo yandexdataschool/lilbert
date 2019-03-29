@@ -280,8 +280,8 @@ class SWAGProcessor(DataProcessor):
 
     def get_dev_examples(self, data_dir):
         """See base class."""
-        lines = self._read_csv(os.path.join(data_dir, "val.csv"), False)
-        return self._create_examples(lines, False)
+        lines = self._read_csv(os.path.join(data_dir, "val.csv"), True)
+        return self._create_examples(lines, True)
 
     def _read_csv(self, input_file, is_training):
         with open(input_file, 'r', encoding='utf-8') as f:
