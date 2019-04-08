@@ -49,6 +49,12 @@ class QuantizedLayer(torch.nn.Module):
     
     
 def quantize_transformer(model, params, n_clusters=8, intermediate_training=False):
+    """
+    Input: model -- BERT model to quantize
+            params -- parameters of the model
+            n_clusters -- number of clusters in which the layers will be quantized
+            intermediate_training -- train model after quantizing some blocks
+    """
     device = params['device']
     if intermediate_training:
         raise ValueError("Not implemented yet!")
