@@ -6,6 +6,7 @@ processors = {
     'mrpc': data_processors.MrpcProcessor,
     'sst2': data_processors.SST2Processor,
     'qqp': data_processors.QQPProcessor,
+    'swag': data_processors.SWAGProcessor,
 }
 
 num_labels = {

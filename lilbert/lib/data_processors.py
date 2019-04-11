@@ -46,7 +46,7 @@ class DataProcessor(object):
     def get_dev_examples(self, data_dir):
         """Gets a collection of `InputExample`s for the dev set."""
         raise NotImplementedError()
-    
+
     def get_labels(self):
         """Gets the list of labels for this data set."""
         raise NotImplementedError()
@@ -76,7 +76,7 @@ class MrpcProcessor(DataProcessor):
         """See base class."""
         return self._create_examples(
             self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
-    
+
     def get_labels(self):
         """See base class."""
         return ["0", "1"]
@@ -109,7 +109,7 @@ class MnliProcessor(DataProcessor):
         return self._create_examples(
             self._read_tsv(os.path.join(data_dir, "dev_matched.tsv")),
             "dev_matched")
-    
+
     def get_labels(self):
         """See base class."""
         return ["contradiction", "entailment", "neutral"]
@@ -156,11 +156,11 @@ class ColaProcessor(DataProcessor):
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
         return examples
-    
+
 
 class SST2Processor(DataProcessor):
     """Processor for the SST2 data set (GLUE version)."""
-    
+
     def get_train_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
@@ -186,7 +186,7 @@ class SST2Processor(DataProcessor):
                 InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
         return examples
 
-    
+
 def get_quora_df(filename):
     with open(filename, "r", encoding='utf-8') as f:
         rows = list(csv.reader(f, delimiter='\t', quotechar=None))
@@ -195,11 +195,11 @@ def get_quora_df(filename):
     df = df[pd.notnull(df['is_duplicate'])]
     df.columns = ['text_a', 'text_b', 'label']
     return df
-    
-    
+
+
 class QQPProcessor(DataProcessor):
     """Processor for the SST2 data set (GLUE version)."""
-    
+
     def get_train_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
@@ -224,4 +224,96 @@ class QQPProcessor(DataProcessor):
             label = row['label']
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
+        return examples
+
+
+class SwagExample(object):
+    """A single training/test example for the SWAG dataset."""
+
+    def __init__(self,
+                 swag_id,
+                 context_sentence,
+                 start_ending,
+                 ending_0,
+                 ending_1,
+                 ending_2,
+                 ending_3,
+                 label=None):
+        self.swag_id = swag_id
+        self.context_sentence = context_sentence
+        self.start_ending = start_ending
+        self.endings = [
+            ending_0,
+            ending_1,
+            ending_2,
+            ending_3,
+        ]
+        self.label = label
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        l = [
+            "swag_id: {}".format(self.swag_id),
+            "context_sentence: {}".format(self.context_sentence),
+            "start_ending: {}".format(self.start_ending),
+            "ending_0: {}".format(self.endings[0]),
+            "ending_1: {}".format(self.endings[1]),
+            "ending_2: {}".format(self.endings[2]),
+            "ending_3: {}".format(self.endings[3]),
+        ]
+
+        if self.label is not None:
+            l.append("label: {}".format(self.label))
+
+        return ", ".join(l)
+
+
+class SWAGProcessor(DataProcessor):
+    """Processor for the SWAG data set."""
+
+    def get_train_examples(self, data_dir):
+        """See base class."""
+        lines = self._read_csv(os.path.join(data_dir, "train.csv"), True)
+        return self._create_examples(lines, True)
+
+    def get_dev_examples(self, data_dir):
+        """See base class."""
+        lines = self._read_csv(os.path.join(data_dir, "val.csv"), True)
+        return self._create_examples(lines, True)
+
+    def _read_csv(self, input_file, is_training):
+        with open(input_file, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            lines = []
+            for line in reader:
+                if sys.version_info[0] == 2:
+                    line = list(unicode(cell, 'utf-8') for cell in line)
+                lines.append(line)
+
+        if is_training and lines[0][-1] != 'label':
+            raise ValueError(
+                "For training, the input file must contain a label column."
+            )
+        return lines[1:]
+
+    def _create_examples(self, lines, is_training):
+        """Creates examples for the training and dev sets."""
+        examples = []
+        for line in lines:
+            examples.append(
+                SwagExample(
+                    swag_id=line[2],
+                    context_sentence=line[4],
+                    start_ending=line[5],  # in the swag dataset, the
+                    # common beginning of each
+                    # choice is stored in "sent2".
+                    ending_0=line[7],
+                    ending_1=line[8],
+                    ending_2=line[9],
+                    ending_3=line[10],
+                    label=int(line[11]) if is_training else None
+                )
+            )
         return examples
