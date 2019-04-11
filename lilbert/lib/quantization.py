@@ -48,7 +48,12 @@ class QuantizedLayer(torch.nn.Module):
         return torch.functional.F.linear(input_, weight, self.bias)
     
     
-def quantize_transformer(model, params, n_clusters=8, intermediate_training=False):
+def quantize_transformer(model, params, n_clusters=8,
+                         intermediate_training=False,
+                         tokenizer=None,
+                         train_examples=None,
+                         dev_examples=None
+                         ):
     """
     Input: model -- BERT model to quantize
             params -- parameters of the model
@@ -57,7 +62,51 @@ def quantize_transformer(model, params, n_clusters=8, intermediate_training=Fals
     """
     device = params['device']
     if intermediate_training:
-        raise ValueError("Not implemented yet!")
+        # raise ValueError("Not implemented yet!")
+        blocks = [
+            [6, 3, 7, 8],
+            [4, 5, 0, 11],
+            [9, 2, 10, 1]
+        ]
+        for i, block in enumerate(blocks):
+            for transformer_layer_ind in tqdm(block):
+                model.bert.encoder.layer[transformer_layer_ind].attention.self.query = \
+                    QuantizedLayer(model.bert.encoder.layer[transformer_layer_ind].attention.self.query, n_clusters).to(
+                        device)
+
+                model.bert.encoder.layer[transformer_layer_ind].attention.self.key = \
+                    QuantizedLayer(model.bert.encoder.layer[transformer_layer_ind].attention.self.key, n_clusters).to(
+                        device)
+
+                model.bert.encoder.layer[transformer_layer_ind].attention.self.value = \
+                    QuantizedLayer(model.bert.encoder.layer[transformer_layer_ind].attention.self.value, n_clusters).to(
+                        device)
+
+                model.bert.encoder.layer[transformer_layer_ind].attention.output.dense = \
+                    QuantizedLayer(model.bert.encoder.layer[transformer_layer_ind].attention.output.dense,
+                                   n_clusters).to(device)
+
+                model.bert.encoder.layer[transformer_layer_ind].intermediate.dense = \
+                    QuantizedLayer(model.bert.encoder.layer[transformer_layer_ind].intermediate.dense, n_clusters).to(
+                        device)
+
+                model.bert.encoder.layer[transformer_layer_ind].output.dense = \
+                    QuantizedLayer(model.bert.encoder.layer[transformer_layer_ind].output.dense, n_clusters).to(device)
+
+            EPOCH_NUM = i
+
+            params['num_train_epochs'] = 1
+            checkpoint_files = {
+                'config': 'bert_config.json',
+                'file_to_save': 'model_{}_epoch_{}.pth'.format(
+                    params['task_name'], EPOCH_NUM)
+            }
+
+            model, result = train(model, tokenizer, params,
+                                  train_examples,
+                                  valid_examples=dev_examples,
+                                  checkpoint_files=checkpoint_files)
+
     else:
         for transformer_layer_ind in tqdm(range(12)):
             model.bert.encoder.layer[transformer_layer_ind].attention.self.query = \
