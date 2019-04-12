@@ -44,7 +44,7 @@ class QuantizedLayer(torch.nn.Module):
 
         # bias initialization
         if hasattr(layer, 'bias'):
-            self.bias = torch.nn.Parameter(layer.bias)
+            self.bias = torch.nn.Parameter(layer.bias, requires_grad=False)
         else:
             self.bias = None
 
@@ -69,52 +69,3 @@ class QuantizedLayer(torch.nn.Module):
         # reconstructed matrix
         weight = self.codes_embedding(decoded_clusters).view(self.matrix_size)
         return torch.functional.F.linear(input_, weight, self.bias)
-
-
-def quantize_transformer(model, params,
-                         n_clusters=8,
-                         random_init=False,
-                         intermediate_training=False,
-                         tokenizer=None,
-                         train_examples=None,
-                         dev_examples=None
-                         ):
-    """
-    Input: model -- BERT model to quantize
-            params -- parameters of the model
-            n_clusters -- number of clusters to quantize
-            intermediate_training -- train model after quantizing some blocks
-    """
-    device = params['device']
-    if intermediate_training:
-        blocks = [
-            [6, 3, 7, 8],
-            [4, 5, 0, 11],
-            [9, 2, 10, 1]
-        ]
-        for i, current_blocks in enumerate(blocks):
-            replace_transformer_layers(model,
-                                       QuantizedLayer,
-                                       blocks=current_blocks,
-                                       n_clusters=n_clusters,
-                                       random_init=random_init)
-            model = model.to(device)
-
-            EPOCH_NUM = i
-
-            params['num_train_epochs'] = 1
-            checkpoint_files = {
-                'config': 'bert_config.json',
-                'file_to_save': 'model_{}_epoch_{}.pth'.format(
-                    params['task_name'], EPOCH_NUM)
-            }
-
-            model, result = train(model, tokenizer, params,
-                                  train_examples,
-                                  valid_examples=dev_examples,
-                                  checkpoint_files=checkpoint_files)
-
-    else:
-        replace_transformer_layers(
-            model, QuantizedLayer, n_clusters=n_clusters, random_init=random_init)
-        model = model.to(device)
