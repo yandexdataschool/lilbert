@@ -33,7 +33,7 @@ class QuantizedLayer(torch.nn.Module):
         if random_init:
             centroids = torch.randn(n_clusters).view(-1, 1)
             centroids_idx = torch.randint(
-                low=0, high=n_clusters, size=size).view(-1)
+                low=0, high=n_clusters, size=self.matrix_size).view(-1)
         else:
             algo = MiniBatchKMeans(n_clusters)
             points = layer.weight.view(-1, 1).detach().cpu().numpy()
@@ -67,11 +67,13 @@ class QuantizedLayer(torch.nn.Module):
             self.mod_mask.to(input_.device)
         decoded_clusters = decoded_matrix.view(-1)[:self.matrix_size.numel()]
         # reconstructed matrix
-        weight = self.codes_embedding(decoded).view(self.matrix_size)
+        weight = self.codes_embedding(decoded_clusters).view(self.matrix_size)
         return torch.functional.F.linear(input_, weight, self.bias)
 
 
-def quantize_transformer(model, params, n_clusters=8,
+def quantize_transformer(model, params,
+                         n_clusters=8,
+                         random_init=False,
                          intermediate_training=False,
                          tokenizer=None,
                          train_examples=None,
@@ -95,7 +97,7 @@ def quantize_transformer(model, params, n_clusters=8,
                                        QuantizedLayer,
                                        blocks=current_blocks,
                                        n_clusters=n_clusters,
-                                       random_init=False)
+                                       random_init=random_init)
             model = model.to(device)
 
             EPOCH_NUM = i
@@ -114,5 +116,5 @@ def quantize_transformer(model, params, n_clusters=8,
 
     else:
         replace_transformer_layers(
-            model, QuantizedLayer, n_clusters=n_clusters, random_init=False)
+            model, QuantizedLayer, n_clusters=n_clusters, random_init=random_init)
         model = model.to(device)
