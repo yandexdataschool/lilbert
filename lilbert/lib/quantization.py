@@ -62,7 +62,6 @@ def quantize_transformer(model, params, n_clusters=8,
     """
     device = params['device']
     if intermediate_training:
-        # raise ValueError("Not implemented yet!")
         blocks = [
             [6, 3, 7, 8],
             [4, 5, 0, 11],
