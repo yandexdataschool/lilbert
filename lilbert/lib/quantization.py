@@ -2,7 +2,7 @@ import torch
 from sklearn.cluster import MiniBatchKMeans
 import math
 from tqdm import tqdm_notebook as tqdm
-from transformer_modification_utils import replace_transformer_layers
+from lib.transformer_modification_utils import replace_transformer_layers
 
 
 class QuantizedLayer(torch.nn.Module):
