@@ -29,7 +29,7 @@ def replace_transformer_layers(model,
                                             'intermediate.dense',
                                             'output.dense'],
                                *args, **kwargs
-                               ):
+                               *args, **kwargs):
     """
     Takes model and replace layers at given blocks at given block parts with a
     new layer returned by NewLayer(*args, **kwargs) class of function
