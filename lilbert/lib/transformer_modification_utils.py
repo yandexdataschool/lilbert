@@ -2,17 +2,23 @@ import functools
 from tqdm import tqdm_notebook as tqdm
 
 
-def rsetattr(obj, attr, val):
+def recursive_setattr(obj, attr, val):
     """
     Nested setattr function
+    Set nested atributes. Example:
+    rsetattr(model.bert.encoder.layer[0], 'attention.self.query', NewLayer)
+    sets model.bert.encoder.layer[0].attention.self.query with NewLayer
     """
     pre, _, post = attr.rpartition('.')
-    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+    return setattr(recursive_getattr(obj, pre) if pre else obj, post, val)
 
 
-def rgetattr(obj, attr, *args):
+def recursive_getattr(obj, attr, *args):
     """
     Nested getattr function
+    Get nested atributes. Example:
+    rgetattr(model.bert.encoder.layer[0], 'attention.self.query')
+    returns model.bert.encoder.layer[0].attention.self.query
     """
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
@@ -46,9 +52,7 @@ def replace_transformer_layers(model,
     for transformer_layer_ind in tqdm(blocks):
         block = model.bert.encoder.layer[transformer_layer_ind]
         for layer in block_parts:
-            rsetattr(block,
-                     layer,
-                     NewLayer(
-                         rgetattr(block, layer),
-                         *args, **kwargs)
-                     )
+            recursive_setattr(block,
+                              layer,
+                              NewLayer(recursive_getattr(block, layer),
+                                       *args, **kwargs))
