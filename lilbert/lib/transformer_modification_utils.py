@@ -1,5 +1,5 @@
 import functools
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 
 
 def rsetattr(obj, attr, val):
