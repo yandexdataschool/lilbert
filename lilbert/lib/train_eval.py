@@ -102,21 +102,21 @@ def train(model, tokenizer, params,
             print(valid_result)
             model.train()
 
-    if not os.path.exists(params['output_dir']):
-        os.makedirs(params['output_dir'])
-    model_to_save = model.module if hasattr(model, 'module') else model
-    output_model_file = os.path.join(params['output_dir'],
-                                     checkpoint_files['file_to_save'])
-    torch.save(model_to_save.state_dict(), output_model_file)
-    output_config_file = os.path.join(params['output_dir'],
-                                      checkpoint_files['config'])
-    with open(output_config_file, 'w') as f:
-        f.write(model_to_save.config.to_json_string())
+#     if not os.path.exists(params['output_dir']):
+#         os.makedirs(params['output_dir'])
+#     model_to_save = model.module if hasattr(model, 'module') else model
+#     output_model_file = os.path.join(params['output_dir'],
+#                                      checkpoint_files['file_to_save'])
+#     torch.save(model_to_save.state_dict(), output_model_file)
+#     output_config_file = os.path.join(params['output_dir'],
+#                                       checkpoint_files['config'])
+#     with open(output_config_file, 'w') as f:
+#         f.write(model_to_save.config.to_json_string())
 
-    train_result = {
-        'train_loss': tr_loss / nb_tr_steps,
-        'train_global_step': global_step,
-    }
+#     train_result = {
+#         'train_loss': tr_loss / nb_tr_steps,
+#         'train_global_step': global_step,
+#     }
     
     return model, train_result
 
