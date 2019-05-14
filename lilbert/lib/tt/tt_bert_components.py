@@ -15,7 +15,7 @@ def make_tt_linear(layer, in_features=768, out_features=768, shape=([4, 4, 6, 8]
 class TTBertEmbeddings(BertEmbeddings):
     def __init__(self, config):
         super(TTBertEmbeddings, self).__init__(config)
-        self.word_embeddings = TTEmbedding(shape=[[12, 12, 15, 15], [4, 4, 6, 8]], tt_rank=32)
+        self.word_embeddings = TTEmbedding(shape=[[5, 8, 9, 9, 10], [3, 4, 4, 4, 4]], tt_rank=128)
 
 
 class TTBertSelfAttention(BertSelfAttention):
