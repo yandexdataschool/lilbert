@@ -105,7 +105,9 @@ def change_transformer_linears_to_svd(model, params, hidden_size=None, compressi
     if hidden_size is None hidden_size for each layer is calculated by the compression_rate
     """
     if hidden_size is None and compression_rate is None:
-        raise ValueError("At least one parameter (hidden_size or compression rate) should be not None")
+        raise ValueError(
+            "At least one parameter (hidden_size or compression rate)"
+            "should be not None")
 
     encoder_layers = list(model.children())[0].encoder.layer
     device = params['device']
