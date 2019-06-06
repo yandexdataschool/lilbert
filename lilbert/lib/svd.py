@@ -98,7 +98,9 @@ def linear_to_svd(linear_layer, hidden_size=None, compression_rate=None):
     return svd_linear
 
 
-def change_transformer_linears_to_svd(model, params, hidden_size=None, compression_rate=None):
+def change_transformer_linears_to_svd(model, params,
+                                      hidden_size=None,
+                                      compression_rate=None):
     """
     Changes all linear layers to SVDLinear layers with hidden size
     equal to hidden_size parameter
