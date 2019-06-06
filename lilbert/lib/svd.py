@@ -79,7 +79,9 @@ def linear_to_svd(linear_layer, hidden_size=None, compression_rate=None):
     if hidden_size is None hidden_size is calculated by the compression_rate
     """
     if hidden_size is None and compression_rate is None:
-        raise ValueError("At least one parameter (hidden_size or compression rate) should be not None")
+        raise ValueError(
+            "At least one parameter (hidden_size or compression rate)"
+            "should be not None")
 
     dense_weight = linear_layer.weight.cpu().data.numpy()
     in_features = linear_layer.in_features
