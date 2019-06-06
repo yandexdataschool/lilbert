@@ -68,7 +68,8 @@ def find_compression_rate(in_features, out_features, hidden_size):
     Returns matrix compression rate for known hidden size
     """
     return in_features * out_features / \
-           (hidden_size * (in_features + out_features + 1))
+    return in_features * out_features / (hidden_size *
+        (in_features + out_features + 1))
 
 
 def linear_to_svd(linear_layer, hidden_size=None, compression_rate=None):
